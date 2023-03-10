@@ -94,8 +94,7 @@ def join():
     global input_file
     destination = Path(input_file).parent
 
-    chunks = list(destination.rglob('*.chk'))
-    chunks.sort()
+    chunks = sorted(destination.rglob('*.chk'))
     file_name = os.path.splitext(os.path.splitext(Path(input_file).name)[0])[0]
     print(file_name)
     with open(f'{destination}\merged_{file_name}', 'ab') as file:
@@ -105,11 +104,11 @@ def join():
                 progress_var.set(index/len(chunks))
                 root.update_idletasks()
                 while True:
-                    bfr = piece.read(read_buffer_size)
-                    if not bfr:
-                        break
-                    file.write(bfr)
+                    if bfr := piece.read(read_buffer_size):
+                        file.write(bfr)
 
+                    else:
+                        break
     status_var.set("Joining complete!")
     progress_var.set(0)
 
@@ -164,10 +163,7 @@ status_label.pack(anchor=SW, padx=10)
 
 
 def callback(P):
-    if str.isdigit(P) or P == "":
-        return True
-    else:
-        return False
+    return bool(str.isdigit(P) or P == "")
 
 
 vcmd = (parts_entry.register(callback))
